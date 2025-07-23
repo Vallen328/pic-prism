@@ -5,18 +5,19 @@ const Navbar = () => {
       {/* Logo and Site Name */}
       <div className='flex justify-between items-center'>
         {/* I will Add the image here later */}
+        <img src="/picprismlogo.png" alt="our logo" className='w-[50px]' />
         <Link to = "/" className='font-bold text-3xl'> PicPrism </Link>
       </div>
 
       {/* Lists of other tabs */}
-      <ul className='flex gap-5 text-lg font-semibold text-gray-400'>
+      <ul className='flex gap-5 text-lg font-semibold text-gray-400 ml-5 sm:ml-0'>
         <Link to = "/" className='hover:text-black cursor-pointer sm:p-2'> About </Link>
         <Link to = "/" className='hover:text-black cursor-pointer sm:p-2'> Contact </Link>
         <Link to = "/login" className='hover:text-black cursor-pointer sm:p-2'> Log In </Link>
         <Link to = "/signup" className='hover:text-black cursor-pointer sm:p-2'> Sign up </Link>
       </ul>
     </nav>  
-  )
-}
+  );
+};
 
 export default Navbar;
