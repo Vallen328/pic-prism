@@ -19,6 +19,7 @@ function App() {
         <Route path = "/seller/profile" element = {<SellerDashboard />} />
         <Route path = "/buyer/profile" element = {<BuyerDashboard />} />
       </Routes>
+      {/* Add your Footer here */}
     </BrowserRouter>
     </>
   )
