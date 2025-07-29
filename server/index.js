@@ -12,6 +12,8 @@ const dotenv = require("dotenv");
 const { readdirSync } = require("fs");  //Helps to read the folder structure
 const { connectDB } = require("./connection");
 
+const cors = require("cors");
+
 // Import the Route here
 // const authRoute = require("./routes/authRoutes");
 //binding this env
@@ -23,6 +25,8 @@ const port = process.env.PORT || 5000;
 
 //Connecting to the database
 connectDB();
+app.use(cors());
+app.use(express.json())
 //Making Routes
 app.get("/", (req, res) => {
     res.send("<center><h1>Server is Runnning Dudes</h1></center>");

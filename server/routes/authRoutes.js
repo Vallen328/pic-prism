@@ -7,7 +7,7 @@ const { login, signup } = require("../controllers/authController");
 //This is the good method
 const router = require("express").Router();
 
-router.post("/login", login);
 router.post("/signup", signup);
+router.post("/login", login);
 
 module.exports = router;
