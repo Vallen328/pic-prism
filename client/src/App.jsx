@@ -1,18 +1,22 @@
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import GsapTransition from './components/GsapTransition';
+import { Toaster } from 'react-hot-toast'; 
+import { Provider } from "react-redux";
+import { store } from "../store/store";
 
 function App() {
-
   return (
     <>
-    <BrowserRouter>
-      <Navbar />
-      <GsapTransition />
-      {/* Add your Footer here */}
-    </BrowserRouter>
+    <Provider store = {store}>
+      <BrowserRouter>
+        <Navbar />
+        <GsapTransition />
+        <Toaster /> 
+      </BrowserRouter>
+    </Provider>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
