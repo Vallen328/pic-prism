@@ -25,7 +25,7 @@ const Login = () => {
       toast.success(data.message);
       //dispatch karna hai login ko -> Joh bh data aa raha hai so i want to push it state mein.
       dispatch(login(data));
-      navigate(`${data.role}/profile`);
+      navigate(`/${data.role}/profile`);
 
     }catch(error){
       toast.error(error.response.data.message);
