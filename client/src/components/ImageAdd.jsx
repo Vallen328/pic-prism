@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-import useUpload from "../../hooks/useUpload";
+import useUpload from "../hooks/useUpload";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import ProgressBar from "@ramonak/react-progress-bar";
@@ -26,7 +26,7 @@ const ImageAdd = () => {
       const price = e.target.price.value;
 
       if (!title || !price) return toast.error("Please fill all the fields.");
-      if (title.trim === "" || price.trim === "")
+      if (title.trim() === "" || price.trim() === "")
         return toast.error("Please fill all the feilds");
 
       const { public_id, secure_url } = await useUpload({
@@ -42,7 +42,7 @@ const ImageAdd = () => {
           title,
           price,
           image: secure_url,
-          public_id: public_id,
+          publicId: public_id,
           author,
         },
         {
