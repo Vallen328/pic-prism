@@ -25,7 +25,10 @@ const port = process.env.PORT || 5000;
 
 //Connecting to the database
 connectDB();
-app.use(cors());
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+}));
 app.use(express.json())
 //Making Routes
 app.get("/", (req, res) => {
