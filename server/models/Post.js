@@ -35,6 +35,10 @@ const postSchema = new mongoose.Schema({
             ref: "User",
         },
     ],
+    isDeleted: {            // <-- NEW: soft-delete flag
+        type: Boolean,
+        default: false,
+    },
 },{timestamps: true}
 );
 

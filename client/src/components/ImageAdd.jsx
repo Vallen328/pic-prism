@@ -132,7 +132,12 @@ const ImageAdd = () => {
         </div>
         <button
           type="submit"
-          className="py-1 px-3 bg-black font-semibold text-white rounded-lg mt-2"
+          className="py-1 px-3 bg-black font-semibold text-white rounded-lg mt-2
+             hover:bg-gray-800
+             active:scale-95 active:bg-gray-900
+             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black
+             cursor-pointer
+             transition-all duration-150 ease-in-out"
         >
           Add Product
         </button>

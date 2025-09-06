@@ -32,17 +32,24 @@ const createPost  =async(req, res) => {
     }
 };
 
-const getAllPosts = async(req, res) => {
-    try {
-        const posts = await Post.find({});
-        if(posts.length === 0) {
-            return res.status(404).json({success: false, message: "No posts found"});
-        }
-        return res.status(200).json({success: true, data: posts});
-    } catch (error) {
-        return res.status(500).json({success: false, message: error.message});
+// controllers/postController.js (or wherever getAllPosts lives)
+const getAllPosts = async (req, res) => {
+  try {
+    // only return posts that are not soft-deleted
+    const posts = await Post.find({ isDeleted: { $ne: true } })
+      .sort({ createdAt: -1 }) // optional: newest first
+      .populate("authorId", "username _id"); // adjust populate fields to your schema
+
+    if (!posts || posts.length === 0) {
+      return res.status(200).json({ success: true, data: [] }); // return empty array rather than 404
     }
+
+    return res.status(200).json({ success: true, data: posts });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
+
 
 const getMyPosts = async(req, res) => {
     const authorId = req.id;
@@ -63,26 +70,63 @@ const getMyPosts = async(req, res) => {
     }
 };
 
-const deletePost = async(req, res) => {
-    const {id} = req.params;
-    try{
-        const post = await Post.findById(id);
-        if(!post) {
-            return res.status(404).json({success: false, message: "Post not found"});
-        }   
-        const {authorId} = post;
-        await User.findByIdAndUpdate(authorId, {
-            $pull : {uploads: id},
-        });
-
-        //We will not do this as your some of the people had already purchased your asset
-        //await Post.findByIdAndDelete(id);
-
-        return res.status(200).json({success: true, message: "Post deleted successfully"});
-    }catch(error){
-        return res.status(500).json({success: false, message: error.message});
+const deletePost = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
     }
+
+    // Remove post reference from user's uploads
+    const authorId = post.authorId || post.author; // adjust if your schema uses authorId
+    await User.findByIdAndUpdate(authorId, {
+      $pull: { uploads: id },
+    });
+
+    // Soft-delete the post so it won't show in public lists but is preserved
+    post.isDeleted = true;
+    await post.save();
+
+    return res.status(200).json({ success: true, message: "Post deleted (soft) successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
+
+// Update a post (seller edits metadata like title, price, image, publicId etc.)
+const updatePost = async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body; // expect { title, price, image, publicId, ... }
+
+  try {
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found" });
+    }
+
+    // Optionally: check that req.id (authenticated user) is the author
+    if (String(post.authorId) !== String(req.id)) {
+      return res.status(403).json({ success: false, message: "Not authorized to edit this post" });
+    }
+
+    // apply updates (whitelist fields)
+    const allowed = ["title", "price", "image"]; // extend if needed
+    allowed.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(updates, field)) {
+        post[field] = updates[field];
+      }
+    });
+
+    // save and return updated doc
+    await post.save();
+
+    return res.status(200).json({ success: true, data: post, message: "Post updated successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 
 const searchPosts = async(req, res) => {
     const { search } = req.query;
@@ -98,43 +142,96 @@ const searchPosts = async(req, res) => {
     }
 };
 
-const addToFavourites = async(req, res) => {
-    const {authorId} = req.id;
-    const {postId} = req.params;    
-    try{
-        const user = await User.findByIdAndUpdate(authorId, {
-            $push: {favourites: postId},
-        });
-        if(!user) return res.status(404).json({success: false, message: "User not found"});
-        return res.status(200).json({success: true, message: "Post added to favourites"});
-    }catch(error){
-        return res.status(500).json({success: false, message: error.message});
-    }
-};
-const removeFromFavourites = async(req, res) => {
-    const {authorId} = req.id;
-    const {postId} = req.params;    
-    try{
-        const user = await User.findByIdAndUpdate(authorId, {
-            $pull: {favourites: postId},
-        });
-        if(!user) return res.status(404).json({success: false, message: "User not found"});
-        return res.status(200).json({success: true, message: "Post removed from favourites"});
-    }catch(error){
-        return res.status(500).json({success: false, message: error.message});
-    }
+// const addToFavourites = async(req, res) => {
+//     const {authorId} = req.id;
+//     const {postId} = req.params;    
+//     try{
+//         const user = await User.findByIdAndUpdate(authorId, {
+//             $push: {favourites: postId},
+//         });
+//         if(!user) return res.status(404).json({success: false, message: "User not found"});
+//         return res.status(200).json({success: true, message: "Post added to favourites"});
+//     }catch(error){
+//         return res.status(500).json({success: false, message: error.message});
+//     }
+// };
+// const removeFromFavourites = async(req, res) => {
+//     const {authorId} = req.id;
+//     const {postId} = req.params;    
+//     try{
+//         const user = await User.findByIdAndUpdate(authorId, {
+//             $pull: {favourites: postId},
+//         });
+//         if(!user) return res.status(404).json({success: false, message: "User not found"});
+//         return res.status(200).json({success: true, message: "Post removed from favourites"});
+//     }catch(error){
+//         return res.status(500).json({success: false, message: error.message});
+//     }
+// };
+
+// const getFavourites = async(req, res) => {
+//     const authorId = req.id;
+//     try{
+//         const {favourites} = await User.findById(authorId).populate("favourites");
+//         if(!favourites) return res.status(404).json({success: false, message: "No favourites added"});
+//         return res.status(200).json({success: true, data: favourites});
+//     }catch(error){
+//         return res.status(500).json({success: false, message: error.message});
+//     }
+// };
+// controllers/postController.js (or wherever these handlers live)
+
+const addToFavourites = async (req, res) => {
+  const authorId = req.id;            // <-- use req.id directly
+  const { postId } = req.params;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      authorId,
+      { $addToSet: { favourites: postId } }, // addToSet avoids duplicates
+      { new: true }
+    );
+
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    return res.status(200).json({ success: true, message: "Post added to favourites", data: user.favourites });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
 
-const getFavourites = async(req, res) => {
-    const authorId = req.id;
-    try{
-        const {favourites} = await User.findById(authorId).populate("favourites");
-        if(!favourites) return res.status(404).json({success: false, message: "No favourites added"});
-        return res.status(200).json({success: true, data: favourites});
-    }catch(error){
-        return res.status(500).json({success: false, message: error.message});
-    }
+const removeFromFavourites = async (req, res) => {
+  const authorId = req.id;
+  const { postId } = req.params;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      authorId,
+      { $pull: { favourites: postId } },
+      { new: true }
+    );
+
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    return res.status(200).json({ success: true, message: "Post removed from favourites", data: user.favourites });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
+
+const getFavourites = async (req, res) => {
+  const authorId = req.id;
+  try {
+    const user = await User.findById(authorId).populate("favourites");
+    const favourites = user?.favourites || [];
+
+    return res.status(200).json({ success: true, data: favourites });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { addToFavourites, removeFromFavourites, getFavourites };
 
 const getPostsByDateRange = async(req, res) => {
     const authorId = req.id;
@@ -168,4 +265,4 @@ const getPostsByDateRange = async(req, res) => {
 }
 
 
-module.exports = {createPost, getAllPosts, getMyPosts, deletePost, searchPosts, addToFavourites, removeFromFavourites, getFavourites, getPostsByDateRange};
+module.exports = {createPost, getAllPosts, getMyPosts, deletePost, updatePost, searchPosts, addToFavourites, removeFromFavourites, getFavourites, getPostsByDateRange};
