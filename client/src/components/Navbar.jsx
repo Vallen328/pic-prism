@@ -45,8 +45,7 @@ const Navbar = () => {
 
       {/* Lists of other tabs */}
       <ul className='flex gap-5 text-lg font-semibold text-gray-400 ml-5 sm:ml-0'>
-        <Link to = "/" className='hover:text-black cursor-pointer sm:p-2'> About </Link>
-        <Link to = "/" className='hover:text-black cursor-pointer sm:p-2'> Contact </Link>
+        <Link to = "/about" className='hover:text-black cursor-pointer sm:p-2'> About </Link>
         {
           !isAuthenticated ? ( 
           <>

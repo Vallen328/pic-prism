@@ -7,6 +7,7 @@ import Signup from "../pages/Signup"
 import gsap from "gsap";
 import { useEffect, useRef } from "react"
 import ProtectedRoute from "./ProtectedRoute"
+import About from "../pages/About"
 
 const GsapTransition = () => {
 
@@ -33,6 +34,7 @@ const GsapTransition = () => {
     <div ref = {nodeRef}>
         <Routes location = {location}>      //Routes ke paas hi location hota hai so we pass it here
             <Route path = "/" element = {<Home />} />
+            <Route path = "/about" element = {<About />} />
             <Route path = "/login" element = {<ProtectedRoute children={<Login />} requiresAuth={false} />} />
             <Route path = "/signup" element = {<ProtectedRoute children={<Signup />} requiresAuth={false} />} />
             <Route path = "/seller/profile" element = {<ProtectedRoute children = {<SellerDashboard />} />} />
